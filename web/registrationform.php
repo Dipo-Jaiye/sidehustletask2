@@ -2,7 +2,7 @@
 //This is a registration form for an internship
 session_start();
 echo "<h1>Internship Registration Form</h1>";
-echo "Already registered? <a href=\"./loginpage.php\">Login</a>";
+echo "Already registered? <a href=\"./web/loginpage.php\">Login</a>";
 
 
 //Defining the error message and form input variables
