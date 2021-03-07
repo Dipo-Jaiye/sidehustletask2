@@ -6,7 +6,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"):
         echo "<h2>Welcome ".$_COOKIE["name"]."</h2>";
         echo "<a href=\"./index.php\">Home</a>";
         $_SESSION["name"]=$_COOKIE["name"];
-        $_SESSION["track"]=$_COOKIE["track"];};
+        $_SESSION["track"]=$_COOKIE["track"];
+    }
+    else{
+        echo "Invalid login credentials";
+        echo "<br><a href=".$_SERVER["PHP_SELF"].">Back</a>";
+    };
 
 else:
     echo "Not registered? <a href=\"./registrationform.php\">Register</a>";
