@@ -4,7 +4,7 @@ session_start();
 if($_SERVER["REQUEST_METHOD"] == "POST"):
     if($_POST["user"] == $_COOKIE["email"] && $_POST["phone"] == $_COOKIE["phone"]){
         echo "<h2>Welcome ".$_COOKIE["name"]."</h2>";
-        echo "<a href=\"./welcome.php\">Home</a>";
+        echo "<a href=\"./index.php\">Home</a>";
         $_SESSION["name"]=$_COOKIE["name"];
         $_SESSION["track"]=$_COOKIE["track"];};
 
