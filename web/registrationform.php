@@ -4,11 +4,19 @@ session_start();
 echo "<h1>Internship Registration Form</h1>";
 echo "Already registered? <a href=\"./loginpage.php\">Login</a>";
 
+//Including the database and connecting to it
+$servername = "localhost";
+$username = "root";
+$dbname = "myDB";
+$dbpassword = "";
+$conn = new mysqli($servername,$username,$dbpassword,$dbname);
 
 //Defining the error message and form input variables
-$fnameErr = $lnameErr = $emailErr = $phoneErr = $trackErr = "";
-$fname = $lname = $email = $phone = $track = "";
+$fnameErr = $lnameErr = $emailErr = $phoneErr = $trackErr = $userpassErr = "";
+$fname = $lname = $email = $phone = $track = $userpass = "";
+$trackName = ["front-end"=>"Frontend Web Development","back-end"=>"Backend Web Development","cloud-dev"=>"Cloud Application Development","mobile"=>"Mobile Application Development"];
 
+//Form Validation
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
     if (empty($_POST["fname"])){
         $fnameErr = " *required";
@@ -44,6 +52,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     else {
         $track = clean($_POST["track"]);
     }
+
+    if (empty($_POST["userpass"])) {
+        $userpassErr = " *required";
+    }
+    else {
+        $userpass = clean($_POST["userpass"]);
+    }
     
 }
 
@@ -56,32 +71,39 @@ function clean($val){
 }
 
 //Display input only after submission if there are no errors
-if($_SERVER["REQUEST_METHOD"] == "POST" && empty($fnameErr) && empty($lnameErr) && empty($emailErr) && empty($phoneErr) && empty($trackErr)):
-    echo "<h4>Thank You $fname!</h4>";
-    echo "Your registration details are:<br><br>";
-    echo "Name: $fname $lname<br><br>";
-    echo "Email: $email<br><br>";
-    echo "Phone Number: $phone<br><br>";
-    $trackName = ["front-end"=>"Frontend Web Development","back-end"=>"Backend Web Development","cloud-dev"=>"Cloud Application Development","mobile"=>"Mobile Application Development"];
-    echo "Track: $trackName[$track]<br><br>";
-    echo "Click <a href=\"".htmlspecialchars($_SERVER["PHP_SELF"])."\">here</a> to go back to the form";
-    setcookie("name","$fname $lname",time()+(86400*30),"/");
-    setcookie("email","$email",time()+(86400*30),"/");
-    setcookie("phone","$phone",time()+(86400*30),"/");
-    setcookie("track","$trackName[$track]",time()+(86400*30),"/");
+if($_SERVER["REQUEST_METHOD"] == "POST" && empty($fnameErr) && empty($lnameErr) && empty($emailErr) && empty($phoneErr) && empty($trackErr) && empty($userpassErr)):
+    //find out if email already exists in database
+    $sql = "SELECT email FROM interns WHERE email='$email'";
+    $result = $conn->query($sql);
+    if($result->num_rows){
+        echo "<p>This email is already registered</p>";
+        echo "Click <a href=\"".htmlspecialchars($_SERVER["PHP_SELF"])."\">here</a> to go back to the form";
+    }
+    else{
+        $sql = "INSERT INTO Interns(fname, lname, email, phone, track, password) VALUES( '$fname', '$lname', '$email', '$phone', '$trackName[$track]', '$userpass');";
+        if ($conn->query($sql) === TRUE) {
+            echo "<p>Registration successful. You will be redirected to login page shortly</p><br><br>";
+            $conn->close();
+            header("refresh:4;url=loginpage.php");
+          } else {
+            echo "<br><br>Registration error: " . $conn->error;
+          }
+        }
 
 else:
     //Display the form
     echo "<h4 style=\"color:red\">Fill out all fields</h4>";
 ?>
 <form action=<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?> method="post">
-    First Name: <input type="text" name="fname" pattern="^[a-zA-Z-']*$" value="<?php echo $fname;?>" placeholder="First Name"><span style="color:red"><?php echo $fnameErr;?></span><br><br>
+    First Name: <input type="text" name="fname" pattern="^[a-zA-Z-']*$" title="Only letters, dashes and apostrophes allowed" value="<?php echo $fname;?>" placeholder="First Name"><span style="color:red"><?php echo $fnameErr;?></span><br><br>
 
-    Last Name: <input type="text" name="lname" pattern="^[a-zA-Z-']*$" value="<?php echo $lname;?>" placeholder="Last Name"><span style="color:red"><?php echo $lnameErr;?></span><br><br>
+    Last Name: <input type="text" name="lname" pattern="^[a-zA-Z-']*$" title="Only letters, dashes and apostrophes allowed" value="<?php echo $lname;?>" placeholder="Last Name"><span style="color:red"><?php echo $lnameErr;?></span><br><br>
 
     Email: <input type="email" name="email" value="<?php echo $email;?>" placeholder="Email Address"><span style="color:red"><?php echo $emailErr;?></span><br><br>
 
-    Phone Number: <input type="tel" name="phone" pattern="0{1}[0-9]{10}" value="<?php echo $phone;?>" placeholder="Phone number"><span style="color:red"><?php echo $phoneErr;?></span><br><br>
+    Password: <input type="password" name="userpass" pattern=".{6,12}" title="min 6 max 12" placeholder="Password"><span style="color:red"><?php echo $userpassErr;?></span><br><br>
+
+    Phone Number: <input type="tel" name="phone" pattern="0{1}[0-9]{10}" title="11 digit phone number" value="<?php echo $phone;?>" placeholder="Phone number"><span style="color:red"><?php echo $phoneErr;?></span><br><br>
 
     Choose your desired track: <br><span style="color:red"><?php echo $trackErr;?></span><br>
 
